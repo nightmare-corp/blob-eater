@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 bevy = "0.12.1"
+# bevy_rapier2d = "0.23.0"
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]
@@ -20,9 +21,9 @@ opt-level = 3
 channel = "nightly"
 
 [profile.release]
-strip = true  # Automatically strip symbols from the binary.
-opt-level = "z"  # Optimize for size.
-# opt-level = "s"  # Can be smaller
+strip = true  # Automatically strip symbols from the binary.\
+# opt-level = "z"  # Optimize for size.
+# opt-level = "s"  # Could be smaller
 lto = true
-# codegen-units = 1 # size vs optimization tradeoff
+codegen-units = 1 # size vs optimization tradeoff?
 panic = "abort" # aborts instead of producing backtrace

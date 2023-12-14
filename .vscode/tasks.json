@@ -3,7 +3,7 @@
     "tasks": [
 		{
 			"type": "shell",
-			"label": "dynamic launch ",
+			"label": "dynamic launch",
 			"command": "cargo run --features bevy/dynamic_linking",
 			"problemMatcher": [
 				"$rustc"
