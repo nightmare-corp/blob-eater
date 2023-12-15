@@ -1,20 +1,10 @@
-use bevy::{
-    prelude::*,
-    sprite::{MaterialMesh2dBundle, Mesh2dHandle},
-};
+use bevy::{prelude::*, sprite::Mesh2dHandle};
+
+use crate::characters::CharacterBundle;
 // use bevy_rapier2d::prelude::*;
 
 #[derive(Component, Debug)]
 struct Player;
-
-// #[derive(Bundle, Debug)]
-// pub struct PlayerBundle {
-//     pub player: Player,
-//     pub transform: Transform,
-//     pub global_transform: GlobalTransform,
-//     // pub collider: Collider,
-//     // pub state: State,
-// }
 
 fn player_setup(
     mut commands: Commands,
@@ -24,7 +14,7 @@ fn player_setup(
     let radius: f32 = 10.;
     // Player circle
     commands.spawn((
-        MaterialMesh2dBundle {
+        CharacterBundle {
             mesh: meshes.add(shape::Circle::new(radius).into()).into(),
             material: materials.add(ColorMaterial::from(Color::WHITE)),
             transform: Transform::from_translation(Vec3::new(-radius, 0., 0.)),
@@ -34,7 +24,7 @@ fn player_setup(
     ));
     // Shadow object
     commands.spawn((
-        MaterialMesh2dBundle {
+        CharacterBundle {
             mesh: meshes.add(shape::Circle::new(radius).into()).into(),
             material: materials.add(ColorMaterial::from(Color::rgba(0.0, 0.0, 0.0, 0.5))), // semi-transparent black for shadow
             transform: Transform::from_translation(Vec3::new(-45., -5., -1.)), // offset and behind the original object
