@@ -4,7 +4,7 @@ use crate::characters::CharacterBundle;
 use bevy::prelude::*;
 use rand::{distributions::Distribution, Rng};
 
-const NPC_COUNT: usize = 100;
+const NPC_COUNT: usize = 10;
 
 #[derive(Component)]
 pub struct Npc {
@@ -40,7 +40,7 @@ enum SpawnOrigin {
 //standard distribution for spawn origin so we can use rng.gen()
 impl Distribution<SpawnOrigin> for rand::distributions::Standard {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> SpawnOrigin {
-        match rng.gen_range(0..3) {
+        match rng.gen_range(0..4) {
             0 => SpawnOrigin::Left,
             1 => SpawnOrigin::Right,
             2 => SpawnOrigin::Top,
@@ -49,7 +49,7 @@ impl Distribution<SpawnOrigin> for rand::distributions::Standard {
         }
     }
 }
-///right now reverses the vector
+/// Right now simply reverses the vector
 fn point_to_direction(location: Vec2) -> Vec2 {
     //direction
     // Vec2::new(0., 0.)
@@ -58,6 +58,9 @@ fn point_to_direction(location: Vec2) -> Vec2 {
 
     return direction;
 }
+/// Calculates the spawn location and direction
+/// Padding is the distance from the edge of the screen, in this case the scale
+/// Bounds is the size of the screen
 fn calc_npc_spawn(padding: f32, bounds: Vec2) -> (Vec2, Vec2) {
     let mut rng = rand::thread_rng();
 
@@ -73,6 +76,7 @@ fn calc_npc_spawn(padding: f32, bounds: Vec2) -> (Vec2, Vec2) {
     match origin {
         SpawnOrigin::Left => {
             location.x = -x - padding;
+            print!("location: {:?}", location);
             location.y = rng.gen_range(-y..y);
 
             //TODO randomize direction towards center/inner screen
@@ -82,18 +86,23 @@ fn calc_npc_spawn(padding: f32, bounds: Vec2) -> (Vec2, Vec2) {
             location.y = rng.gen_range(-y..y);
         }
         SpawnOrigin::Top => {
-            location.y = y - padding;
+            location.y = y + padding;
             location.x = rng.gen_range(-x..x);
         }
         SpawnOrigin::Bottom => {
-            location.y = -y + padding;
+            location.y = -y - padding;
             location.x = rng.gen_range(-x..x);
         }
     }
     direction = point_to_direction(location);
     (location, direction)
 }
+/// Calculates the radius of the npc based on the current player level
+fn radius_from_level(level: u32) -> f32 {
+    let mut rng = rand::thread_rng();
 
+    rng.gen_range(10.0..50.0)
+}
 fn npc_spawn(
     mut commands: Commands,
     query: Query<Entity, With<Npc>>,
@@ -101,25 +110,31 @@ fn npc_spawn(
     mut materials: ResMut<Assets<ColorMaterial>>,
     windows: Query<&Window>,
 ) {
+    let mut rng = rand::thread_rng();
+    let player_level = 1;
     let window: &Window = windows.single();
     let bounds: Vec2 = Vec2::new(window.width(), window.height());
-    let (location, direction) = calc_npc_spawn(10., bounds);
+    let radius = radius_from_level(player_level);
     // TODO radius depends on current score.
-    let radius: f32 = 10.;
-    let count = query.iter().count();
-    // TODO color radomized
-    let color = Color::RED;
-    // Direction random.
+    let (location, direction) = calc_npc_spawn(10., bounds / 2.);
 
+    let count = query.iter().count();
+    // Color radomized
+    let color: Color = Color::rgb(
+        rng.gen::<f32>(), // Red
+        rng.gen::<f32>(), // Green
+        rng.gen::<f32>(), // Blue
+    );
     if count < NPC_COUNT {
         commands.spawn((
             CharacterBundle {
                 mesh: meshes.add(shape::Circle::new(radius).into()).into(),
                 material: materials.add(ColorMaterial::from(color)),
-                transform: Transform::from_translation(Vec3::new(-radius, location.x, location.y)),
+                transform: Transform::from_translation(Vec3::new(location.x, location.y, 0.)),
                 ..default()
             },
-            Npc::new(direction),
+            //TODO direction.
+            // Npc::new(direction),
         ));
     }
 }
