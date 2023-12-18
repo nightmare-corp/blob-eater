@@ -12,6 +12,8 @@ use npcs::NpcPlugin;
 mod characters;
 mod npcs;
 mod player;
+
+//TODO UI for debug purposes, e.g. FPS counter and other data.
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)

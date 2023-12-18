@@ -3,8 +3,14 @@ use bevy::{
     sprite::{Material2d, Mesh2dHandle},
 };
 
+//TODO I want this in CharacterBundle
+#[derive(Component, Debug)]
+pub struct CharacterData {
+    pub level: i32,
+}
+
 /// A component bundle for entities with a [`Mesh2dHandle`] and a [`Material2d`].
-#[derive(Bundle, Clone)]
+#[derive(Bundle)]
 pub struct CharacterBundle<M: Material2d> {
     pub mesh: Mesh2dHandle,
     pub material: Handle<M>,
