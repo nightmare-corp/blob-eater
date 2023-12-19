@@ -4,7 +4,7 @@ use crate::characters::CharacterBundle;
 use bevy::prelude::*;
 use rand::{distributions::Distribution, Rng};
 
-const NPC_COUNT: usize = 10;
+const NPC_COUNT: usize = 50;
 
 #[derive(Component)]
 pub struct Npc {
@@ -13,8 +13,14 @@ pub struct Npc {
     pub direction: Vec2,
 }
 impl Npc {
-    fn new(direction: Vec2) -> Self {
-        //TODO maybe no need to normalize..
+    fn new(mut direction: Vec2) -> Self {
+        let mut rng = rand::thread_rng();
+        let random_number = rand::thread_rng().gen_range(0. ..8.);
+        if rng.gen() {
+            direction.x = direction.x / random_number;
+        } else {
+            direction.y = direction.y / random_number;
+        }
         let direction = direction.normalize();
         Self {
             // direction_id: rand::thread_rng().gen_range(0..8),
@@ -116,7 +122,7 @@ fn npc_spawn(
     let bounds: Vec2 = Vec2::new(window.width(), window.height());
     let radius = radius_from_level(player_level);
     // TODO radius depends on current score.
-    let (location, direction) = calc_npc_spawn(10., bounds / 2.);
+    let (location, direction) = calc_npc_spawn(10., bounds);
 
     let count = query.iter().count();
     // Color radomized
@@ -130,11 +136,11 @@ fn npc_spawn(
             CharacterBundle {
                 mesh: meshes.add(shape::Circle::new(radius).into()).into(),
                 material: materials.add(ColorMaterial::from(color)),
-                transform: Transform::from_translation(Vec3::new(location.x, location.y, 0.)),
+                transform: Transform::from_translation(Vec3::new(location.x, location.y, -radius)),
                 ..default()
             },
             //TODO direction.
-            // Npc::new(direction),
+            Npc::new(direction),
         ));
     }
 }
