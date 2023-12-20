@@ -1,4 +1,4 @@
-use crate::characters::CharacterBundle;
+use crate::characters::{CharacterBundle, CharacterData};
 use bevy::prelude::*;
 use rand::{distributions::Distribution, Rng};
 
@@ -63,7 +63,7 @@ fn point_to_direction(location: Vec2) -> Vec2 {
 fn calc_npc_spawn(padding: f32, bounds: Vec2) -> (Vec2, Vec2) {
     let mut rng = rand::thread_rng();
 
-    //grab the middle of both sides of the screen
+    // Grab the middle of both sides of the screen
     let x = bounds.x / 2.0;
     let y = bounds.y / 2.0;
 
@@ -71,7 +71,6 @@ fn calc_npc_spawn(padding: f32, bounds: Vec2) -> (Vec2, Vec2) {
     println!("origin: {:?}", origin as u8);
 
     let mut location = Vec2::ZERO;
-    let mut direction = Vec2::ZERO;
     match origin {
         SpawnOrigin::Left => {
             location.x = -x - padding;
@@ -91,14 +90,14 @@ fn calc_npc_spawn(padding: f32, bounds: Vec2) -> (Vec2, Vec2) {
             location.x = rng.gen_range(-x..x);
         }
     }
-    direction = point_to_direction(location);
+    let direction = point_to_direction(location);
     (location, direction)
 }
-/// Calculates the radius of the npc based on the current player level
-fn radius_from_level(level: u32) -> f32 {
+/// Calculates the radius and level of the npc based on the current player level
+fn radius_from_level() -> f32 {
     let mut rng = rand::thread_rng();
-
-    rng.gen_range(10.0..50.0)
+    rng.gen_range(9.0..50.0)
+    // TODO switch statement for level
 }
 fn npc_spawn(
     mut commands: Commands,
@@ -108,10 +107,9 @@ fn npc_spawn(
     windows: Query<&Window>,
 ) {
     let mut rng = rand::thread_rng();
-    let player_level = 1;
     let window: &Window = windows.single();
     let bounds: Vec2 = Vec2::new(window.width(), window.height());
-    let radius = radius_from_level(player_level);
+    let radius = radius_from_level();
     // TODO radius depends on current score.
     let (location, direction) = calc_npc_spawn(10., bounds);
 
@@ -130,8 +128,8 @@ fn npc_spawn(
                 transform: Transform::from_translation(Vec3::new(location.x, location.y, -radius)),
                 ..default()
             },
-            //TODO direction.
             Npc::new(direction),
+            CharacterData { radius },
         ));
     }
 }
@@ -139,7 +137,7 @@ fn npc_movement(
     time: Res<Time>,
     mut commands: Commands,
     mut npc_position: Query<(Entity, &mut Transform, &Npc)>,
-    mut windows: Query<&Window>,
+    windows: Query<&Window>,
 ) {
     let window = windows.single();
     let bounds = (window.width(), window.height());

@@ -1,7 +1,6 @@
 use bevy::{prelude::*, sprite::Mesh2dHandle};
 
-use crate::characters::CharacterBundle;
-// use bevy_rapier2d::prelude::*;
+use crate::characters::{CharacterBundle, CharacterData};
 
 #[derive(Component, Debug)]
 struct Player;
@@ -20,18 +19,18 @@ fn player_setup(
             transform: Transform::from_translation(Vec3::new(-radius, 0., 0.)),
             ..default()
         },
+        CharacterData { radius },
         Player,
     ));
     // Shadow object
-    commands.spawn((
-        CharacterBundle {
+    commands.spawn(
+        (CharacterBundle {
             mesh: meshes.add(shape::Circle::new(radius).into()).into(),
             material: materials.add(ColorMaterial::from(Color::rgba(0.0, 0.0, 0.0, 0.5))), // semi-transparent black for shadow
             transform: Transform::from_translation(Vec3::new(-45., -5., -1.)), // offset and behind the original object
             ..default()
-        },
-        Player,
-    ));
+        }),
+    );
 }
 fn move_player(
     windows: Query<&Window>,

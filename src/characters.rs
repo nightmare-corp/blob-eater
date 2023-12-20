@@ -6,9 +6,10 @@ use bevy::{
 //TODO I want this in CharacterBundle
 #[derive(Component, Debug)]
 pub struct CharacterData {
-    pub level: i32,
+    pub radius: f32,
 }
 
+//TODO is it possible to add more fields to this?
 /// A component bundle for entities with a [`Mesh2dHandle`] and a [`Material2d`].
 #[derive(Bundle)]
 pub struct CharacterBundle<M: Material2d> {
