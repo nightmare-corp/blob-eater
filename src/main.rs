@@ -8,6 +8,8 @@ use bevy::{
     input::{keyboard::KeyCode, Input},
     DefaultPlugins,
 };
+use bevy_rapier2d::prelude::*;
+
 use npcs::NpcPlugin;
 mod characters;
 mod npcs;
@@ -18,6 +20,10 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins((player::PlayerPlugin, NpcPlugin))
+        .add_plugins((
+            RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
+            RapierDebugRenderPlugin::default(),
+        ))
         .add_systems(Startup, setup_foundation)
         .add_systems(Update, keyboard_input)
         .run();

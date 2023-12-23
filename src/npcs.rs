@@ -1,8 +1,9 @@
 use crate::characters::{CharacterBundle, CharacterData};
 use bevy::prelude::*;
+use bevy_rapier2d::geometry::{Collider, Sensor};
 use rand::{distributions::Distribution, Rng};
 
-const NPC_COUNT: usize = 50;
+const NPC_COUNT: usize = 20;
 
 #[derive(Component)]
 pub struct Npc {
@@ -68,13 +69,11 @@ fn calc_npc_spawn(padding: f32, bounds: Vec2) -> (Vec2, Vec2) {
     let y = bounds.y / 2.0;
 
     let origin: SpawnOrigin = rng.gen();
-    println!("origin: {:?}", origin as u8);
 
     let mut location = Vec2::ZERO;
     match origin {
         SpawnOrigin::Left => {
             location.x = -x - padding;
-            print!("location: {:?}", location);
             location.y = rng.gen_range(-y..y);
         }
         SpawnOrigin::Right => {
@@ -96,7 +95,7 @@ fn calc_npc_spawn(padding: f32, bounds: Vec2) -> (Vec2, Vec2) {
 /// Calculates the radius and level of the npc based on the current player level
 fn radius_from_level() -> f32 {
     let mut rng = rand::thread_rng();
-    rng.gen_range(9.0..50.0)
+    rng.gen_range(7.0..20.0)
     // TODO switch statement for level
 }
 fn npc_spawn(
@@ -121,16 +120,21 @@ fn npc_spawn(
         rng.gen::<f32>(), // Blue
     );
     if count < NPC_COUNT {
-        commands.spawn((
-            CharacterBundle {
-                mesh: meshes.add(shape::Circle::new(radius).into()).into(),
-                material: materials.add(ColorMaterial::from(color)),
-                transform: Transform::from_translation(Vec3::new(location.x, location.y, -radius)),
-                ..default()
-            },
-            Npc::new(direction),
-            CharacterData { radius },
-        ));
+        commands
+            .spawn((
+                CharacterBundle {
+                    mesh: meshes.add(shape::Circle::new(radius).into()).into(),
+                    material: materials.add(ColorMaterial::from(color)),
+                    transform: Transform::from_translation(Vec3::new(
+                        location.x, location.y, -radius,
+                    )),
+                    ..default()
+                },
+                Npc::new(direction),
+                CharacterData { radius },
+            ))
+            .insert(Collider::ball(radius * 0.96))
+            .insert(Sensor);
     }
 }
 fn npc_movement(
