@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use crate::characters::{CharacterBundle, CharacterData};
+use crate::{
+    characters::{CharacterBundle, CharacterData},
+    ui::{LevelText, UIPlugin},
+};
 use bevy_rapier2d::prelude::*;
 
 #[derive(Component, Debug)]
@@ -43,6 +46,7 @@ fn player_frame(
     character_data: Query<(&mut CharacterData, &mut Transform), Without<Player>>,
     mut character_data_player: Query<(&mut CharacterData, &mut Transform), With<Player>>,
     commands: Commands,
+    level_text_query: Query<&mut Text, With<LevelText>>,
 ) {
     move_player(windows, camera_q, &mut character_data_player);
     handle_collision(
@@ -50,6 +54,7 @@ fn player_frame(
         character_data,
         character_data_player,
         commands,
+        level_text_query,
     );
 }
 
@@ -76,6 +81,8 @@ fn handle_collision(
     character_data: Query<(&mut CharacterData, &mut Transform), Without<Player>>,
     mut character_data_player: Query<(&mut CharacterData, &mut Transform), With<Player>>,
     mut commands: Commands,
+    //update ui
+    mut level_text_query: Query<&mut Text, With<LevelText>>,
 ) {
     for collision_event in collision_events.read() {
         match collision_event {
@@ -96,6 +103,7 @@ fn handle_collision(
                     "Player radius: {}, Npc radius {}",
                     player_radius, npc_radius
                 );
+                //player eats npc
                 if player_radius > npc_radius {
                     println!("Player is bigger than NPC");
                     commands.entity(*npc).despawn();
@@ -108,6 +116,9 @@ fn handle_collision(
                         println!("Player radius: {}", player_data.radius);
                         //TODO how to update the mesh?
                         player_transform.scale = player_transform.scale * 1.05;
+                        for mut text in &mut level_text_query {
+                            text.sections[1].value = format!("{}", player_data.radius);
+                        }
                     }
                 } else {
                     println!("GAME OVER");
@@ -123,7 +134,8 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, player_setup)
+        app.add_plugins(UIPlugin)
+            .add_systems(Startup, player_setup)
             .add_systems(Update, player_frame);
     }
 }
