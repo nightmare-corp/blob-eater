@@ -131,7 +131,7 @@ fn npc_spawn(
                     ..default()
                 },
                 Npc::new(direction),
-                CharacterData { radius },
+                CharacterData { radius, level: 0 },
             ))
             .insert(Collider::ball(radius * 0.96))
             .insert(Sensor);

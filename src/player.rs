@@ -24,7 +24,7 @@ fn player_setup(
                 transform: Transform::from_translation(Vec3::new(0., 0., 0.)),
                 ..default()
             },
-            CharacterData { radius },
+            CharacterData { radius, level: 0 },
             Player,
         ))
         .insert((
@@ -111,13 +111,14 @@ fn handle_collision(
                     if let Ok((mut player_data, mut player_transform)) =
                         character_data_player.get_mut(*player)
                     {
-                        player_data.radius += npc_radius;
+                        player_data.level += 1;
+                        player_data.radius = player_data.level as f32 * 10.;
                         // player_transform.scale
-                        println!("Player radius: {}", player_data.radius);
+                        println!("Player radius: {}", player_data.level);
                         //TODO how to update the mesh?
                         player_transform.scale = player_transform.scale * 1.05;
                         for mut text in &mut level_text_query {
-                            text.sections[1].value = format!("{}", player_data.radius);
+                            text.sections[1].value = format!("{}", player_data.level);
                         }
                     }
                 } else {

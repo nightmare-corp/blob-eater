@@ -17,7 +17,7 @@ fn setup(mut commands: Commands /* , asset_server: Res<AssetServer> */) {
         // Create a TextBundle that has a Text with a list of sections.
         TextBundle::from_sections([
             TextSection::new(
-                "FPS: ",
+                "0",
                 TextStyle {
                     // This font is loaded and will be used instead of the default font.
                     // font: asset_server.load("fonts/FiraSans-Bold.ttf"),
@@ -76,13 +76,3 @@ fn setup(mut commands: Commands /* , asset_server: Res<AssetServer> */) {
         }),
     );
 }
-
-// fn text_update_system(
-//     // diagnostics: Res<DiagnosticsStore>,
-//     mut query: Query<&mut Text, With<LevelText>>,
-// ) {
-//     let x = 100;
-//     for mut text in &mut query {
-//         text.sections[1].value = format!("{x:.2}");
-//     }
-// }
