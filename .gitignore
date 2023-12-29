@@ -1,1 +1,4 @@
 /target
+out/blob-eater_bg.wasm
+out/blob-eater_bg.zip
+out/blob-eater.js
