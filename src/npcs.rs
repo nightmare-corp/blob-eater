@@ -6,7 +6,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::geometry::{Collider, Sensor};
 use rand::{distributions::Distribution, Rng};
 
-const NPC_COUNT: usize = 20;
+const NPC_COUNT: usize = 40;
 
 #[derive(Component)]
 pub struct Npc {
@@ -99,7 +99,7 @@ fn calc_npc_spawn(padding: f32, bounds: Vec2) -> (Vec2, Vec2) {
 fn radius_from_level(player_level: u32) -> f32 {
     let level = player_level as f32;
     let mut rng = rand::thread_rng();
-    rng.gen_range(7.0..level * 15.0)
+    rng.gen_range(7.0..level + 40.0)
 }
 fn npc_spawn(
     mut commands: Commands,
