@@ -24,7 +24,8 @@ impl Npc {
         }
         let direction = direction.normalize();
         Self {
-            speed: rand::thread_rng().gen_range(50.0..300.0),
+            //TODO I want a distrubution here
+            speed: rand::thread_rng().gen_range(15.0..300.0),
             direction,
         }
     }
@@ -97,6 +98,11 @@ fn calc_npc_spawn(padding: f32, bounds: Vec2) -> (Vec2, Vec2) {
 }
 /// Calculates the radius and level of the npc based on the current player level
 fn radius_from_level(player_level: u32) -> f32 {
+    // an idea
+    // if player_level < 10 {
+    //     let level = player_level as f32;
+    //     let mut rng = rand::thread_rng();
+    //     return rng.gen_range(7.0..level + 60.0);    // }
     let level = player_level as f32;
     let mut rng = rand::thread_rng();
     rng.gen_range(7.0..level + 40.0)
@@ -113,7 +119,6 @@ fn npc_spawn(
     let window: &Window = windows.single();
     let bounds: Vec2 = Vec2::new(window.width(), window.height());
     let radius = radius_from_level(player_level.level() + 1);
-    // TODO radius depends on current score.
     let (location, direction) = calc_npc_spawn(10., bounds);
 
     let count = query.iter().count();

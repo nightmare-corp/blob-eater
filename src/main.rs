@@ -1,4 +1,3 @@
-use bevy::prelude::*;
 use bevy::{
     app::{App, AppExit, Startup, Update},
     core_pipeline::core_2d::Camera2dBundle,
@@ -24,7 +23,7 @@ fn main() {
         .add_plugins((player::PlayerPlugin, NpcPlugin))
         .add_plugins((
             RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0),
-            RapierDebugRenderPlugin::default(),
+            // RapierDebugRenderPlugin::default(),
         ))
         .add_systems(Startup, setup_foundation)
         .add_systems(Update, keyboard_input)

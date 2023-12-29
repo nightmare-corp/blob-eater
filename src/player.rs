@@ -17,11 +17,6 @@ impl PlayerLevel {
     pub fn level(&self) -> u32 {
         self.0
     }
-
-    // Setter
-    pub fn set_level(&mut self, level: u32) {
-        self.0 = level;
-    }
     // adds one
     pub fn plus(&mut self) {
         self.0 += 1;
@@ -70,7 +65,7 @@ fn player_frame(
     mut character_data_player: Query<(&mut CharacterData, &mut Transform), With<Player>>,
     commands: Commands,
     level_text_query: Query<&mut Text, With<LevelText>>,
-    mut player_level: ResMut<PlayerLevel>,
+    player_level: ResMut<PlayerLevel>,
 ) {
     move_player(windows, camera_q, &mut character_data_player);
     handle_collision(
@@ -123,11 +118,10 @@ fn handle_collision(
                     .get(*npc)
                     .map(|(npc_data, _)| npc_data.radius)
                     .unwrap_or_default();
-                //player eats npc
-                println!("player {}, npc {}", player_radius, npc_radius);
-                if player_radius > npc_radius {
+                // Player eats npc
+                // Player gets a small boost.
+                if player_radius + 0.5 > npc_radius {
                     commands.entity(*npc).despawn();
-                    //TODO player would never be in here.
                     if let Ok((mut player_data, mut player_transform)) =
                         character_data_player.get_mut(*player)
                     {
@@ -141,11 +135,11 @@ fn handle_collision(
                         }
                     }
                 } else {
-                    //TODO game over overlay.
+                    //TODO game over overlay message.
                     println!("GAME OVER");
                     // Despawn player hierarchy
                     commands.entity(*player).despawn_recursive();
-                    //TODO restart game button.
+                    //TODO click to restart game.
                 }
             }
             CollisionEvent::Stopped(_, _, _) => {}

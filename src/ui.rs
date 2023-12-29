@@ -58,21 +58,4 @@ fn setup(mut commands: Commands /* , asset_server: Res<AssetServer> */) {
             },
         ),
     );
-
-    #[cfg(not(feature = "default_font"))]
-    commands.spawn(
-        TextBundle::from_section(
-            "Default font disabled",
-            TextStyle {
-                // font: asset_server.load("fonts/FiraMono-Medium.ttf"),
-                ..default()
-            },
-        )
-        .with_style(Style {
-            position_type: PositionType::Absolute,
-            bottom: Val::Px(5.0),
-            left: Val::Px(15.0),
-            ..default()
-        }),
-    );
 }
