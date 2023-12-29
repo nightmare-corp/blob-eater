@@ -1,4 +1,7 @@
-use crate::characters::{CharacterBundle, CharacterData};
+use crate::{
+    characters::{CharacterBundle, CharacterData},
+    player::PlayerLevel,
+};
 use bevy::prelude::*;
 use bevy_rapier2d::geometry::{Collider, Sensor};
 use rand::{distributions::Distribution, Rng};
@@ -93,10 +96,10 @@ fn calc_npc_spawn(padding: f32, bounds: Vec2) -> (Vec2, Vec2) {
     (location, direction)
 }
 /// Calculates the radius and level of the npc based on the current player level
-fn radius_from_level() -> f32 {
+fn radius_from_level(player_level: u32) -> f32 {
+    let level = player_level as f32;
     let mut rng = rand::thread_rng();
-    rng.gen_range(7.0..20.0)
-    // TODO switch statement for level
+    rng.gen_range(7.0..level * 15.0)
 }
 fn npc_spawn(
     mut commands: Commands,
@@ -104,11 +107,12 @@ fn npc_spawn(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     windows: Query<&Window>,
+    player_level: Res<PlayerLevel>,
 ) {
     let mut rng = rand::thread_rng();
     let window: &Window = windows.single();
     let bounds: Vec2 = Vec2::new(window.width(), window.height());
-    let radius = radius_from_level();
+    let radius = radius_from_level(player_level.level() + 1);
     // TODO radius depends on current score.
     let (location, direction) = calc_npc_spawn(10., bounds);
 
@@ -131,7 +135,7 @@ fn npc_spawn(
                     ..default()
                 },
                 Npc::new(direction),
-                CharacterData { radius, level: 0 },
+                CharacterData { radius },
             ))
             .insert(Collider::ball(radius * 0.96))
             .insert(Sensor);

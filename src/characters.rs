@@ -7,7 +7,7 @@ use bevy::{
 #[derive(Component, Debug)]
 pub struct CharacterData {
     pub radius: f32,
-    pub level: u32,
+    // pub level: u32,
 }
 
 //TODO is it possible to add more fields to this?

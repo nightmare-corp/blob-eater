@@ -9,26 +9,49 @@ use bevy_rapier2d::prelude::*;
 #[derive(Component, Debug)]
 struct Player;
 
+#[derive(Resource, Debug)]
+pub struct PlayerLevel(u32);
+
+impl PlayerLevel {
+    // Getter
+    pub fn level(&self) -> u32 {
+        self.0
+    }
+
+    // Setter
+    pub fn set_level(&mut self, level: u32) {
+        self.0 = level;
+    }
+    // adds one
+    pub fn plus(&mut self) {
+        self.0 += 1;
+    }
+}
+
 fn player_setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    let radius: f32 = 10.;
+    commands.insert_resource(PlayerLevel(0));
     // Player circle
     commands
         .spawn((
             CharacterBundle {
-                mesh: meshes.add(shape::Circle::new(radius).into()).into(),
+                mesh: meshes
+                    .add(shape::Circle::new(PLAYER_START_RADIUS).into())
+                    .into(),
                 material: materials.add(ColorMaterial::from(Color::WHITE)),
                 transform: Transform::from_translation(Vec3::new(0., 0., 0.)),
                 ..default()
             },
-            CharacterData { radius, level: 0 },
+            CharacterData {
+                radius: PLAYER_START_RADIUS,
+            },
             Player,
         ))
         .insert((
-            Collider::ball(radius * 0.96),
+            Collider::ball(PLAYER_START_RADIUS * 0.96),
             //TODO why does it only work when RigidBodyType::Dynamic?
             RigidBody::Dynamic,
             GravityScale(0.0),
@@ -47,6 +70,7 @@ fn player_frame(
     mut character_data_player: Query<(&mut CharacterData, &mut Transform), With<Player>>,
     commands: Commands,
     level_text_query: Query<&mut Text, With<LevelText>>,
+    mut player_level: ResMut<PlayerLevel>,
 ) {
     move_player(windows, camera_q, &mut character_data_player);
     handle_collision(
@@ -55,6 +79,7 @@ fn player_frame(
         character_data_player,
         commands,
         level_text_query,
+        player_level,
     );
 }
 
@@ -75,7 +100,7 @@ fn move_player(
         }
     }
 }
-///
+const PLAYER_START_RADIUS: f32 = 10.;
 fn handle_collision(
     mut collision_events: EventReader<CollisionEvent>,
     character_data: Query<(&mut CharacterData, &mut Transform), Without<Player>>,
@@ -83,12 +108,12 @@ fn handle_collision(
     mut commands: Commands,
     //update ui
     mut level_text_query: Query<&mut Text, With<LevelText>>,
+    mut player_level: ResMut<PlayerLevel>,
 ) {
     for collision_event in collision_events.read() {
         match collision_event {
             // On collision
             CollisionEvent::Started(player, npc, _) => {
-                println!("Player {:?} collided with NPC {:?}", player, npc);
                 // This looks awkward. Is there a better way to do this?
                 let player_radius = character_data_player
                     .get(*player)
@@ -98,33 +123,29 @@ fn handle_collision(
                     .get(*npc)
                     .map(|(npc_data, _)| npc_data.radius)
                     .unwrap_or_default();
-
-                println!(
-                    "Player radius: {}, Npc radius {}",
-                    player_radius, npc_radius
-                );
                 //player eats npc
+                println!("player {}, npc {}", player_radius, npc_radius);
                 if player_radius > npc_radius {
-                    println!("Player is bigger than NPC");
                     commands.entity(*npc).despawn();
                     //TODO player would never be in here.
                     if let Ok((mut player_data, mut player_transform)) =
                         character_data_player.get_mut(*player)
                     {
-                        player_data.level += 1;
-                        player_data.radius = player_data.level as f32 * 10.;
-                        // player_transform.scale
-                        println!("Player radius: {}", player_data.level);
-                        //TODO how to update the mesh?
-                        player_transform.scale = player_transform.scale * 1.05;
+                        player_level.plus();
+                        let level = player_level.level().clone();
+                        player_data.radius =
+                            level as f32 * PLAYER_START_RADIUS * 0.1 + PLAYER_START_RADIUS;
+                        player_transform.scale = Vec3::splat(1.0 + level as f32 * 0.1);
                         for mut text in &mut level_text_query {
-                            text.sections[1].value = format!("{}", player_data.level);
+                            text.sections[1].value = format!("{}", level);
                         }
                     }
                 } else {
+                    //TODO game over overlay.
                     println!("GAME OVER");
                     // Despawn player hierarchy
                     commands.entity(*player).despawn_recursive();
+                    //TODO restart game button.
                 }
             }
             CollisionEvent::Stopped(_, _, _) => {}
