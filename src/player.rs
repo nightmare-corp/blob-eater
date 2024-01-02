@@ -34,7 +34,7 @@ pub fn player_setup(
         text.sections[1].value = format!("{}", 0);
     }
     // Player circle
-    let player_id = commands
+    commands
         .spawn((
             CharacterBundle {
                 mesh: meshes
@@ -56,8 +56,7 @@ pub fn player_setup(
             GravityScale(0.0),
         ))
         .insert(Sensor)
-        .insert(ActiveEvents::COLLISION_EVENTS)
-        .id();
+        .insert(ActiveEvents::COLLISION_EVENTS);
 }
 
 //TODO I need feedback on this whole function.
@@ -121,7 +120,7 @@ fn handle_collision(
                 info!("player_radius: {}", player_radius);
                 let (npc_radius, npc_id, player_id) = character_data
                     .get(*col2)
-                    .map(|(npc_data, id)| (npc_data.radius, col2, col1))
+                    .map(|(npc_data, _)| (npc_data.radius, col2, col1))
                     .unwrap_or_else(|_| {
                         info!("Tried number 2");
                         character_data

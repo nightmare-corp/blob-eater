@@ -1,8 +1,8 @@
 use bevy::{
-    app::{App, AppExit, Startup, Update},
+    app::{App, Startup},
     core_pipeline::core_2d::Camera2dBundle,
     ecs::system::{Commands, Res},
-    input::{keyboard::KeyCode, Input},
+    input::Input,
     prelude::*,
     DefaultPlugins,
 };
@@ -51,9 +51,3 @@ fn restart_game(
 fn setup_foundation(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
-
-// fn exit_game(keys: Res<Input<KeyCode>>, mut exit: EventWriter<AppExit>) {
-//     if keys.just_pressed(KeyCode::Escape) {
-//         exit.send(AppExit);
-//     }
-// }
