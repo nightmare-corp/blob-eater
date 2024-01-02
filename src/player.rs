@@ -17,20 +17,24 @@ impl PlayerLevel {
     pub fn level(&self) -> u32 {
         self.0
     }
-    // adds one
+    // Adds one
     pub fn plus(&mut self) {
         self.0 += 1;
     }
 }
 
-fn player_setup(
+pub fn player_setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    mut level_text_query: Query<&mut Text, With<LevelText>>,
 ) {
     commands.insert_resource(PlayerLevel(0));
+    for mut text in &mut level_text_query {
+        text.sections[1].value = format!("{}", 0);
+    }
     // Player circle
-    commands
+    let player_id = commands
         .spawn((
             CharacterBundle {
                 mesh: meshes
@@ -52,8 +56,10 @@ fn player_setup(
             GravityScale(0.0),
         ))
         .insert(Sensor)
-        .insert(ActiveEvents::COLLISION_EVENTS);
+        .insert(ActiveEvents::COLLISION_EVENTS)
+        .id();
 }
+
 //TODO I need feedback on this whole function.
 fn player_frame(
     windows: Query<&Window>,
@@ -107,42 +113,66 @@ fn handle_collision(
 ) {
     for collision_event in collision_events.read() {
         match collision_event {
+            //Possible issue is that the tuple values are switched arround aga,
             // On collision
-            CollisionEvent::Started(player, npc, _) => {
-                // This looks awkward. Is there a better way to do this?
-                let player_radius = character_data_player
-                    .get(*player)
-                    .map(|(player_data, _)| player_data.radius)
-                    .unwrap_or_default();
-                let npc_radius = character_data
-                    .get(*npc)
-                    .map(|(npc_data, _)| npc_data.radius)
-                    .unwrap_or_default();
+            CollisionEvent::Started(col1, col2, _) => {
+                let player_radius = character_data_player.single_mut().0.radius;
+
+                info!("player_radius: {}", player_radius);
+                let (npc_radius, npc_id, player_id) = character_data
+                    .get(*col2)
+                    .map(|(npc_data, id)| (npc_data.radius, col2, col1))
+                    .unwrap_or_else(|_| {
+                        info!("Tried number 2");
+                        character_data
+                            .get(*col1)
+                            .map(|(npc_data, _)| (npc_data.radius, col1, col2))
+                            .unwrap_or_else(|_| {
+                                error!("No radius found for npc");
+                                //return
+                                return (default(), col1, col2);
+                            })
+                    });
                 // Player eats npc
                 // Player gets a small boost.
+                info!(
+                    "Player radius: {}, NPC radius: {}",
+                    player_radius, npc_radius
+                );
                 if player_radius + 0.5 > npc_radius {
-                    commands.entity(*npc).despawn();
-                    if let Ok((mut player_data, mut player_transform)) =
-                        character_data_player.get_mut(*player)
-                    {
-                        player_level.plus();
-                        let level = player_level.level().clone();
-                        player_data.radius =
-                            level as f32 * PLAYER_START_RADIUS * 0.1 + PLAYER_START_RADIUS;
-                        player_transform.scale = Vec3::splat(1.0 + level as f32 * 0.1);
-                        for mut text in &mut level_text_query {
-                            text.sections[1].value = format!("{}", level);
-                        }
-                    }
+                    commands.entity(*npc_id).despawn();
+                    player_levels(
+                        &mut character_data_player,
+                        player_id,
+                        &mut player_level,
+                        &mut level_text_query,
+                    );
                 } else {
                     //TODO game over overlay message.
-                    println!("GAME OVER");
+                    info!("GAME OVER");
                     // Despawn player hierarchy
-                    commands.entity(*player).despawn_recursive();
+                    commands.entity(*player_id).despawn_recursive();
                     //TODO click to restart game.
                 }
             }
             CollisionEvent::Stopped(_, _, _) => {}
+        }
+    }
+}
+
+fn player_levels(
+    character_data_player: &mut Query<'_, '_, (&mut CharacterData, &mut Transform), With<Player>>,
+    player: &Entity,
+    player_level: &mut ResMut<'_, PlayerLevel>,
+    level_text_query: &mut Query<'_, '_, &mut Text, With<LevelText>>,
+) {
+    if let Ok((mut player_data, mut player_transform)) = character_data_player.get_mut(*player) {
+        player_level.plus();
+        let level = player_level.level().clone();
+        player_data.radius = level as f32 * PLAYER_START_RADIUS * 0.1 + PLAYER_START_RADIUS;
+        player_transform.scale = Vec3::splat(1.0 + level as f32 * 0.1);
+        for mut text in level_text_query {
+            text.sections[1].value = format!("{}", level);
         }
     }
 }

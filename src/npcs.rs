@@ -103,6 +103,9 @@ fn radius_from_level(player_level: u32) -> f32 {
     //     let level = player_level as f32;
     //     let mut rng = rand::thread_rng();
     //     return rng.gen_range(7.0..level + 60.0);    // }
+
+    // another idea throw in a few giant circles. (let's use a distrubtion for this)
+
     let level = player_level as f32;
     let mut rng = rand::thread_rng();
     rng.gen_range(7.0..level + 40.0)
