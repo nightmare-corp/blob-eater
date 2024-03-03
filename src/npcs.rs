@@ -7,7 +7,13 @@ use bevy_rapier2d::geometry::{Collider, Sensor};
 use rand::{distributions::Distribution, Rng};
 
 const NPC_COUNT: usize = 40;
+pub struct NpcPlugin;
 
+impl Plugin for NpcPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Update, (npc_movement, npc_spawn));
+    }
+}
 #[derive(Component)]
 pub struct Npc {
     pub speed: f32,
@@ -30,13 +36,7 @@ impl Npc {
         }
     }
 }
-pub struct NpcPlugin;
 
-impl Plugin for NpcPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(Update, (npc_movement, npc_spawn));
-    }
-}
 #[derive(Copy, Clone)]
 enum SpawnOrigin {
     Left,
@@ -122,16 +122,17 @@ fn npc_spawn(
     let window: &Window = windows.single();
     let bounds: Vec2 = Vec2::new(window.width(), window.height());
     let radius = radius_from_level(player_level.level() + 1);
-    let (location, direction) = calc_npc_spawn(10., bounds);
 
     let count = query.iter().count();
-    // Color radomized
-    let color: Color = Color::rgb(
-        rng.gen::<f32>(), // Red
-        rng.gen::<f32>(), // Green
-        rng.gen::<f32>(), // Blue
-    );
+
     if count < NPC_COUNT {
+        let (location, direction) = calc_npc_spawn(10., bounds);
+        // Color radomized
+        let color: Color = Color::rgb(
+            rng.gen::<f32>(), // Red
+            rng.gen::<f32>(), // Green
+            rng.gen::<f32>(), // Blue
+        );
         commands
             .spawn((
                 CharacterBundle {

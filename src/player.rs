@@ -6,6 +6,16 @@ use crate::{
 };
 use bevy_rapier2d::prelude::*;
 
+pub struct PlayerPlugin;
+
+impl Plugin for PlayerPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_plugins(UIPlugin)
+            .add_systems(Startup, player_setup)
+            .add_systems(Update, player_frame);
+    }
+}
+
 #[derive(Component, Debug)]
 struct Player;
 
@@ -173,14 +183,5 @@ fn player_levels(
         for mut text in level_text_query {
             text.sections[1].value = format!("{}", level);
         }
-    }
-}
-pub struct PlayerPlugin;
-
-impl Plugin for PlayerPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_plugins(UIPlugin)
-            .add_systems(Startup, player_setup)
-            .add_systems(Update, player_frame);
     }
 }
