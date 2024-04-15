@@ -7,7 +7,7 @@ impl Plugin for UIPlugin {
     }
 }
 
-// A unit struct to help identify the FPS UI component, since there may be many Text components
+// A unit struct to help identify the Level UI component, since there may be many Text components
 #[derive(Component)]
 pub struct LevelText;
 
@@ -44,18 +44,4 @@ fn setup(mut commands: Commands /* , asset_server: Res<AssetServer> */) {
         ]),
         LevelText,
     ));
-
-    #[cfg(feature = "default_font")]
-    commands.spawn(
-        // Here we are able to call the `From` method instead of creating a new `TextSection`.
-        // This will use the default font (a minimal subset of FiraMono) and apply the default styling.
-        TextBundle::from("From an &str into a TextBundle with the default font!").with_style(
-            Style {
-                position_type: PositionType::Absolute,
-                bottom: Val::Px(5.0),
-                left: Val::Px(15.0),
-                ..default()
-            },
-        ),
-    );
 }
